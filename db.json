@@ -1,0 +1,20 @@
+{
+  "clientes": [
+    {
+      "nombre": "Julian",
+      "empresa": "freelance",
+      "telefono": "03564333998",
+      "email": "julian.fmartinez@gmail.com",
+      "notas": "Esta tarado",
+      "id": 1
+    },
+    {
+      "nombre": "Julian",
+      "empresa": "freelance",
+      "telefono": "03564333998",
+      "email": "julian.fmartinez@gmail.com",
+      "notas": "Esta tarado",
+      "id": 2
+    }
+  ]
+}

@@ -1,67 +1,89 @@
+import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field } from 'formik';
-import * as yup from 'yup'
+import * as yup from 'yup';
 import Alerta from './Alerta';
-const Formulario = () => {
+import Spinner from './Spinner';
 
-    //Schema para la validacion de los campos del formulario con yup
-    const nuevoClienteSchema = yup.object({
-        nombre: yup
-                .string()
-                .min(3, 'El nombre es muy corto')
-                .max(20, 'El nombre es muy largo')
-                .required('El nombre es requerido'),
-        empresa: yup
-                .string()
-                .required('El nombre de la empresa es requerido'),
-        email: yup
-                .string()
-                .email('El email no es valido')
-                .required('El email es requerido'),
-        telefono: yup
-                .number()
-                .integer('Numero no válido')
-                .positive('Numero no válido')
-                .typeError('El telefono debe ser numerico'),
+const Formulario = ({ cliente, cargando }) => {
+  const navigate = useNavigate();
 
-    })
+  //Schema para la validacion de los campos del formulario con yup
+  const nuevoClienteSchema = yup.object({
+    nombre: yup
+      .string()
+      .min(3, 'El nombre es muy corto')
+      .max(20, 'El nombre es muy largo')
+      .required('El nombre es requerido'),
+    empresa: yup.string().required('El nombre de la empresa es requerido'),
+    email: yup
+      .string()
+      .email('El email no es valido')
+      .required('El email es requerido'),
+    telefono: yup
+      .number()
+      .integer('Numero no válido')
+      .positive('Numero no válido')
+      .typeError('El telefono debe ser numerico'),
+  });
 
-    const handleSubmit = async (values) =>{
-        try {
-            const url = 'http://localhost:4000/clientes';
-            const respuesta = await fetch(url, {
-                method: 'POST',
-                body: JSON.stringify(values),
-                headers: { 'Content-Type': 'application/json' }
-            })
-           console.log(respuesta)
-        } catch (error) {
-            console.log(error);
+  const handleSubmit = async (values) => {
+    try {
+      if (cliente.id) {
+        //Editando un registro existente
+        const url = `http://localhost:4000/clientes/${cliente.id}`;
+        const respuesta = await fetch(url, {
+          method: 'PUT',
+          body: JSON.stringify(values),
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (respuesta.ok) {
+          alert('Cliente editado correctamente');
         }
+      } else {
+        //Agregando un nuevo registro
+        const url = 'http://localhost:4000/clientes';
+        const respuesta = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify(values),
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (respuesta.ok) {
+          alert('Cliente agregado correctamente');
+        }
+      }
+      navigate('/clientes');
+    } catch (error) {
+      console.log(error);
     }
-    
-  return (
+  };
+
+  return cargando ? (
+    <Spinner />
+  ) : (
     <div className="bg-white mt-10 px-5 py-10 rounded-md shadow-md shadow-blue-300/50 md:w-3/4 mx-auto ">
       <h1 className=" text-gray-600 font-bold text-xl uppercase text-center">
-        Agregar Cliente
+        {cliente?.nombre ? 'Editar Cliente' : 'Agregar Cliente'}
       </h1>
 
       <Formik
         /*initialValues tiene que ser igual al name de cada field
-         ej nombre:'' -> name="nombre" */
+          ej nombre:'' -> name="nombre" */
         initialValues={{
-          nombre: '',
-          empresa: '',
-          telefono: '',
-          email: '',
-          notas: '',
+          nombre: cliente?.nombre ?? '',
+          empresa: cliente?.empresa ?? '',
+          telefono: cliente?.telefono ?? '',
+          email: cliente?.email ?? '',
+          notas: cliente?.notas ?? '',
         }}
-        onSubmit={(values) => {
-          //Se envian los values al handleSubmit  
-          handleSubmit(values);
+        enableReinitialize={true}
+        onSubmit={async (values, { resetForm }) => {
+          //Se envian los values al handleSubmit
+          await handleSubmit(values);
+          resetForm();
         }}
         validationSchema={nuevoClienteSchema}
       >
-        {({errors, touched}) => {
+        {({ errors, touched }) => {
           return (
             <Form className="mt-10">
               <div className="mb-4">
@@ -144,7 +166,7 @@ const Formulario = () => {
 
               <input
                 type="submit"
-                value="Agregar Cliente"
+                value={cliente?.nombre ? 'Editar Cliente' : 'Agregar Cliente'}
                 className="mt-5 w-full bg-blue-800 p-3 text-white uppercase font-bold text-lg hover:bg-blue-600 cursor-pointer"
               />
             </Form>
@@ -153,6 +175,12 @@ const Formulario = () => {
       </Formik>
     </div>
   );
+};
+
+//Si no se le pasa ningun cliente, se le asigna un objeto vacio
+Formulario.defaultProps = {
+  cliente: {},
+  cargando: false,
 };
 
 export default Formulario;

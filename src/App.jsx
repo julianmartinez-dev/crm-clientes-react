@@ -11,7 +11,8 @@ function App() {
 
   useEffect(() => {
     const consultarApi = async () =>{
-      const respuesta = await fetch('http://localhost:4000/clientes')
+      const url = import.meta.env.VITE_API_URL;
+      const respuesta = await fetch(url)
       const data = await respuesta.json()
       setClientes(data)
     }
@@ -29,12 +30,12 @@ function App() {
           /clientes/editar/:id
           */
         }
+        
         <Route path="/clientes" element={<Layout />}>
           <Route index element={<Inicio clientes={clientes}/>}/>
           <Route path="nuevo" element={<NuevoCliente/>}/>
           <Route path="editar/:id" element={<EditarCliente/>}/>
         </Route>
-
       </Routes>
     </BrowserRouter>
   );
